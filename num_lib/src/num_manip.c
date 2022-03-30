@@ -40,7 +40,7 @@ int comp(const int* a, const int* b) {
     return *a - *b;
 }
 
-void m_sort(DArray* arrays, size_t count) {
+void m_sort(array_t* arrays, size_t count) {
 
     for(size_t i = 0; i < count; ++i)
         qsort(arrays[i].arr, arrays[i].size, sizeof(int), (int(*)(const void*, const void*)) comp);
