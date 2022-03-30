@@ -1,9 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "num_utils.h"
 
 int main(int argc, char* argv[]) {
-
     string_t* file_names = NULL;
     size_t files_count = 0;
     size_t proc_count = 0;
@@ -20,6 +20,11 @@ int main(int argc, char* argv[]) {
     if(code != 0) {
         print_message(code);
     }
+
+    for(size_t i = 0; i < files_count; ++i) {
+        free(file_names[i]);
+    }
+    free(file_names);
 
     return 0;
 }

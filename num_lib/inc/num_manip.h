@@ -11,4 +11,4 @@ size_t get_dig_cnt(int);
 
 int comp(const int*, const int*);
 
-void m_sort(array_t*, size_t);
+void m_sort(array_t*);
