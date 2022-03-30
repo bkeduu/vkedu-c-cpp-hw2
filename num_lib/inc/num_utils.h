@@ -28,8 +28,7 @@ error_t start(string_t [], size_t, size_t);
 error_t open_file(string_t, file_t*);
 error_t get_array(array_t*, string_t);
 
-error_t print_result(array_t*);
 error_t print_median(array_t*);
-error_t draw_hist(array_t*);
+error_t draw_hist(array_t*, size_t);
 
 void print_message(error_t);

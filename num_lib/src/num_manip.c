@@ -6,7 +6,7 @@
 
 int get_max(size_t* arr, size_t size) {
 
-    if(arr == NULL) {
+    if(arr == NULL || size == 0) {
         return ERR_NULL;
     }
 
@@ -42,6 +42,6 @@ int comp(const int* a, const int* b) {
     return *a - *b;
 }
 
-void m_sort(array_t* array) {
-    qsort(array->arr, array->size, sizeof(int), (int(*)(const void*, const void*)) comp);
+void m_sort(array_t array) {
+    qsort(array.arr, array.size, sizeof(int), (int(*)(const void*, const void*)) comp);
 }

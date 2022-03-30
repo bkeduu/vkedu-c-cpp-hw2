@@ -7,7 +7,7 @@ set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-g -O0 -Wall -Werror -Wpedantic")
 
 add_executable(${PROJECT_NAME} numbers.c)
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lm -coverage -lgcov" )
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lm -coverage -lgcov -pthread" )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${NUM_LIB_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${NUM_LIB_LIBRARIES})

@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <semaphore.h>
 
+#include <sys/mman.h>
 #include <sys/wait.h>
 
 #include "num_utils.h"
@@ -100,51 +102,38 @@ error_t start(string_t file_names[], size_t files_count, size_t proc_count) {
         return ERR_MORE_PROC;
     }
 
-    pid_t* pids = malloc(sizeof(pid_t) * proc_count);
+    array_t* arrays = malloc(sizeof(array_t) * files_count);
 
-    for(size_t i = 0; i < proc_count; ++i) {
+    for(size_t i = 0; i < files_count; ++i) {
+        error_t code = 0;
 
-        pids[i] = fork();
+        code = get_array(&arrays[i], file_names[i]);
 
-        if(pids[i] < 0) {
-            free(pids);
-            return ERR_PROC;
-        }
-        else if(pids[i] == 0) {
-            for(size_t j = i; j < files_count; j += proc_count) {
-                error_t code = 0;
-                array_t* arr = malloc(sizeof(array_t));
+        if (code != 0) {
 
-                code = get_array(arr, file_names[j]);
-
-                if (code != 0) {
-                    for(size_t k = 0; k < i; ++k) {
-                        waitpid(pids[k], NULL, 0);
-                    }
-
-                    free(arr);
-                    free(pids);
-                    return code;
-                }
-
-                m_sort(arr);
-
-                print_result(arr);
-
-                free(arr->arr);
-                free(arr);
+            for(size_t j = 0; j < files_count; ++j){
+                free(arrays[j].arr);
             }
+            free(arrays);
 
-            free(pids);
-            return 0;
+            return code;
         }
     }
 
-    for(size_t i = 0; i < proc_count; ++i) {
-        waitpid(pids[i], NULL, 0);
+    for(size_t i = 0; i < files_count; ++i) {
+        m_sort(arrays[i]);
     }
 
-    free(pids);
+    array_t* sh_arrays = mmap(NULL, sizeof(array_t) * files_count, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1 ,0);
+    memcpy(sh_arrays, arrays, sizeof(array_t) * files_count);
+
+    for(size_t i = 0; i < files_count; ++i) {
+        draw_hist(&arrays[i], proc_count);
+    }
+
+    memcpy(arrays, sh_arrays, sizeof(array_t) * files_count);
+    munmap(sh_arrays, sizeof(array_t) * files_count);
+
     return 0;
 }
 
@@ -220,18 +209,6 @@ error_t get_array(array_t* result, string_t file_name) {
     return 0;
 }
 
-error_t print_result(array_t* array) {
-    error_t code = print_median(array);
-
-    if(code != 0) {
-        return code;
-    }
-
-    code = draw_hist(array);
-
-    return code;
-}
-
 error_t print_median(array_t* array) {
     if(array == NULL) {
         return ERR_NULL;
@@ -242,7 +219,7 @@ error_t print_median(array_t* array) {
     return 0;
 }
 
-error_t draw_hist(array_t* array) {
+error_t draw_hist(array_t* array, size_t proc_count) {
     if(array == NULL) {
         return ERR_NULL;
     }
@@ -259,14 +236,61 @@ error_t draw_hist(array_t* array) {
         digits_count[k] = 0;
     }
 
-    for (size_t k = 0; k < array->size; ++k) {
-        int curr_value = array->arr[k];
+    size_t* sh_digits_count = mmap(NULL, sizeof(size_t) * 10, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    memcpy(sh_digits_count, digits_count, sizeof(size_t) * 10);
 
-        while (curr_value > 0) {
-            digits_count[curr_value % 10]++;
-            curr_value /= 10;
+    sem_t* semaphore = malloc(sizeof(sem_t));
+
+    if(semaphore == NULL) {
+        return ERR_MALLOC;
+    }
+
+    sem_init(semaphore, 1, 1);
+    sem_t* sh_semaphore = mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    memcpy(sh_semaphore, semaphore, sizeof(sem_t));
+
+    pid_t *pids = malloc(sizeof(pid_t) * proc_count);
+
+    if(pids == NULL) {
+        return ERR_MALLOC;
+    }
+
+    for (size_t i = 0; i < proc_count; ++i) {
+
+        pids[i] = fork();
+
+        if (pids[i] < 0) {
+            free(pids);
+            return ERR_PROC;
+        } else if (pids[i] == 0) {
+
+            for(size_t k = i; k < array->size; k += proc_count) {
+
+                sem_wait(sh_semaphore);
+
+                int curr_value = array->arr[k];
+
+                while (curr_value > 0) {
+                    sh_digits_count[curr_value % 10]++;
+                    curr_value /= 10;
+                }
+
+                sem_post(sh_semaphore);
+            }
+
+            free(pids);
+            exit(0);
         }
     }
+
+    for (size_t j = 0; j < proc_count; ++j) {
+        waitpid(pids[j], NULL, 0);
+    }
+
+    free(pids);
+
+    memcpy(digits_count, sh_digits_count, sizeof(size_t) * 10);
+    munmap(sh_digits_count, sizeof(size_t) * 10);
 
     long dig_cnt_sum = get_sum(digits_count, 10);
     double mid = (double)dig_cnt_sum / 10;
@@ -311,6 +335,8 @@ void print_message(error_t code) {
         case ERR_NO_FILES:
             printf("No files given, exiting...\n");
             return;
+        case ERR_PROC:
+            printf("Error while creating child process, exiting...\n");
         default:
             break;
     }
