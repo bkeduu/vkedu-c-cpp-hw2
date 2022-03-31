@@ -94,8 +94,6 @@ errors_t handle_files(string_t file_names[], size_t files_count, size_t proc_cou
         return ERR_NULL;
     }
 #ifndef BUILD_STATIC
-    printf("BUILD_SHARED\n");
-
     if(proc_count > sysconf(_SC_NPROCESSORS_ONLN)) {
         return ERR_MORE_PROC;
     }
@@ -106,11 +104,8 @@ errors_t handle_files(string_t file_names[], size_t files_count, size_t proc_cou
 #endif
 
 #ifdef BUILD_STATIC
-    printf("BUILD_STATIC\n");
     proc_count = 1;
 #endif
-
-    printf("proc_count: %ld\n\n", proc_count);
 
     array_t* arrays = malloc(sizeof(array_t) * files_count);
     errors_t code = 0;

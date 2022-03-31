@@ -45,7 +45,7 @@ int main(){
     child = fork();
 
     if(child == 0) {
-        system("./../../build/numbers ../../build/vec_1.txt ../../build/vec_2.txt");
+        execv("./../../build/numbers", argv);
         exit(0);
     }
 
@@ -85,7 +85,7 @@ int main(){
     child = fork();
 
     if(child == 0) {
-        system("./../../build/numbers ../../build/vec_1.txt ../../build/vec_2.txt");
+        execv("./../../build/numbers", argv);
         exit(0);
     }
 
