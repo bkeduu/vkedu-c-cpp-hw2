@@ -10,7 +10,7 @@
 #include "num_utils.h"
 #include "num_manip.h"
 
-error_t get_params(string_t argv[], size_t argc, string_t** file_names, size_t* files_cnt, size_t* proc_cnt) {
+errors_t get_params(string_t argv[], size_t argc, string_t** file_names, size_t* files_cnt, size_t* proc_cnt) {
     if(files_cnt == NULL || proc_cnt == NULL || argv == NULL || file_names == NULL) {
         return ERR_NULL;
     }
@@ -19,7 +19,7 @@ error_t get_params(string_t argv[], size_t argc, string_t** file_names, size_t* 
 
     while((opt = getopt((int)argc, argv, "-:j:")) != -1) {
         if(opt == 'j') {
-            size_t proc_arg = strtol(optarg, NULL, 10);
+            size_t proc_arg = strtoul(optarg, NULL, 10);
             if (proc_arg > 0) {
                 *proc_cnt = proc_arg;
             }
@@ -34,7 +34,7 @@ error_t get_params(string_t argv[], size_t argc, string_t** file_names, size_t* 
         }
         else if(opt == 1) {
             if(*file_names == NULL) {
-                *file_names = malloc(sizeof(string_t*));
+                *file_names = malloc(sizeof(string_t));
 
                 if(*file_names == NULL) {
                     return ERR_MALLOC;
@@ -66,7 +66,7 @@ error_t get_params(string_t argv[], size_t argc, string_t** file_names, size_t* 
                 free(*file_names);
             }
 
-            strcpy((*file_names)[*files_cnt - 1], optarg);
+            strncpy((*file_names)[*files_cnt - 1], optarg, strlen(optarg) + 1);
         }
         else {
             for(size_t i = 0; i < *files_cnt; ++i) {
@@ -87,13 +87,13 @@ error_t get_params(string_t argv[], size_t argc, string_t** file_names, size_t* 
             free((*file_names)[i]);
         }
         free(*file_names);
-        return ERR_MALLOC;
+        return ERR_NO_FILES;
     }
 
     return 0;
 }
 
-error_t start(string_t file_names[], size_t files_count, size_t proc_count) {
+errors_t handle_files(string_t file_names[], size_t files_count, size_t proc_count) {
     if(file_names == NULL || files_count == 0 || proc_count == 0) {
         return ERR_NULL;
     }
@@ -103,9 +103,10 @@ error_t start(string_t file_names[], size_t files_count, size_t proc_count) {
     }
 
     array_t* arrays = malloc(sizeof(array_t) * files_count);
+    errors_t code = 0;
 
     for(size_t i = 0; i < files_count; ++i) {
-        error_t code = 0;
+        code = 0;
 
         code = get_array(&arrays[i], file_names[i]);
 
@@ -120,24 +121,38 @@ error_t start(string_t file_names[], size_t files_count, size_t proc_count) {
         }
     }
 
-    for(size_t i = 0; i < files_count; ++i) {
-        m_sort(arrays[i]);
+    code = m_sort(&arrays, files_count, proc_count);
+
+    if(code != 0) {
+        for(size_t i = 0; i < files_count; ++i) {
+            free(arrays[i].arr);
+        }
+        free(arrays);
+
+        return code;
     }
 
-    array_t* sh_arrays = mmap(NULL, sizeof(array_t) * files_count, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1 ,0);
-    memcpy(sh_arrays, arrays, sizeof(array_t) * files_count);
-
     for(size_t i = 0; i < files_count; ++i) {
-        draw_hist(&arrays[i], proc_count);
+        code = print_info(&arrays[i], proc_count);
+
+        if(code != 0) {
+            for(size_t j = 0; j < files_count; ++j) {
+                free(arrays[j].arr);
+            }
+            free(arrays);
+            return code;
+        }
     }
 
-    memcpy(arrays, sh_arrays, sizeof(array_t) * files_count);
-    munmap(sh_arrays, sizeof(array_t) * files_count);
+    for(size_t i = 0; i < files_count; ++i) {
+        free(arrays[i].arr);
+    }
+    free(arrays);
 
     return 0;
 }
 
-error_t open_file(string_t file_name, file_t* file) {
+errors_t open_file(string_t file_name, file_t* file) {
     if(file == NULL) {
         return ERR_NULL;
     }
@@ -151,7 +166,7 @@ error_t open_file(string_t file_name, file_t* file) {
     return 0;
 }
 
-error_t get_array(array_t* result, string_t file_name) {
+errors_t get_array(array_t* result, string_t file_name) {
     if(result == NULL || file_name == NULL) {
         return ERR_NULL;
     }
@@ -209,22 +224,14 @@ error_t get_array(array_t* result, string_t file_name) {
     return 0;
 }
 
-error_t print_median(array_t* array) {
+errors_t print_info(array_t* array, size_t proc_count) {
     if(array == NULL) {
         return ERR_NULL;
     }
 
-    printf("Vector: %s, median: %d\n", array->vec_name, array->arr[array->size / 2]);
+    printf("\nVector: %s, median: %d\n", array->vec_name, array->arr[array->size / 2]);
 
-    return 0;
-}
-
-error_t draw_hist(array_t* array, size_t proc_count) {
-    if(array == NULL) {
-        return ERR_NULL;
-    }
-
-    printf("\nDigits distribution histogram for \"%s\" vector:\n", array->vec_name);
+    printf("Digits distribution histogram for \"%s\" vector:\n\n", array->vec_name);
 
     size_t* digits_count = malloc(sizeof(size_t) * 10);
 
@@ -278,8 +285,11 @@ error_t draw_hist(array_t* array, size_t proc_count) {
                 sem_post(sh_semaphore);
             }
 
+            sem_destroy(semaphore);
+            free(digits_count);
+            free(semaphore);
             free(pids);
-            exit(0);
+            return NERROR_PROC_EXIT;
         }
     }
 
@@ -287,10 +297,13 @@ error_t draw_hist(array_t* array, size_t proc_count) {
         waitpid(pids[j], NULL, 0);
     }
 
+    sem_destroy(semaphore);
+    free(semaphore);
     free(pids);
 
     memcpy(digits_count, sh_digits_count, sizeof(size_t) * 10);
     munmap(sh_digits_count, sizeof(size_t) * 10);
+    munmap(sh_semaphore, sizeof(sem_t));
 
     long dig_cnt_sum = get_sum(digits_count, 10);
     double mid = (double)dig_cnt_sum / 10;
@@ -312,7 +325,7 @@ error_t draw_hist(array_t* array, size_t proc_count) {
     return 0;
 }
 
-void print_message(error_t code) {
+void print_message(errors_t code) {
     switch(code) {
         case ERR_MALLOC:
             printf("Malloc error in program, exiting...\n");

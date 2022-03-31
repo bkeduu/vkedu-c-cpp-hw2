@@ -13,4 +13,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${NUM_LIB_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${NUM_LIB_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE m)
 
-#add_subdirectory(tests)
+add_subdirectory(tests)

@@ -2,4 +2,3 @@
 build
 vectors/*.txt
 cmake-build-debug
-tests

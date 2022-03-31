@@ -1,6 +1,6 @@
 import numpy as np
 import time
-
+import threading
 
 def gen_file(cnt, rmax, fnum):
     arr = np.random.randint(0, rmax, (cnt, 1), dtype=int)
@@ -15,4 +15,5 @@ if __name__ == '__main__':
     files_count = int(input("Enter count of files: "))
 
     for i in range(files_count):
-        gen_file(count, rand_max, i)
+        t = threading.Thread(target=gen_file, args=[count, rand_max, i])
+        t.start()
