@@ -107,6 +107,7 @@ errors_t handle_files(string_t file_names[], size_t files_count, size_t proc_cou
     proc_count = 1;
 #endif
 
+
     array_t* arrays = malloc(sizeof(array_t) * files_count);
     errors_t code = 0;
 

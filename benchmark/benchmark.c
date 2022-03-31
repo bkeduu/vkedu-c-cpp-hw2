@@ -16,10 +16,10 @@ int main(){
     int tmp;
 
     printf("Building static-library version.\n");
-    system("rm -rf ../../build && mkdir -p ../../build && cd ../../build && cmake -DBUILD_STATIC=ON ..  && cmake --build . ");
+    system("rm -rf ../../build && mkdir -p ../../build && cd ../../build && cmake -DBUILD_STATIC=ON .. > /dev/null 2>&1  && cmake --build . > /dev/null 2>&1");
 
     printf("Testing static version.\n");
-    printf("Parameters: 2 files with 100000 numbers each.\n");
+    printf("Parameters: 2 files with 1000000 numbers each.\n");
     printf("Generating files.\n");
 
     vec_1 = fopen("../../build/vec_1.txt", "w+");
@@ -56,10 +56,10 @@ int main(){
     printf("End clock() value: %ld.\n Time in seconds: %lf\n", end, (end - start) / (double)CLOCKS_PER_SEC);
 
     printf("Cleaning build directory and building shared-library version.\n");
-    system("rm -rf ../../build && mkdir -p ../../build && cd ../../build && cmake -DBUILD_SHARED=ON ..  && cmake --build . ");
+    system("rm -rf ../../build && mkdir -p ../../build && cd ../../build && cmake -DBUILD_SHARED=ON .. > /dev/null 2>&1  && cmake --build . > /dev/null 2>&1");
 
     printf("Testing shared version.\n");
-    printf("Parameters: 2 files with 100000 numbers each.\n");
+    printf("Parameters: 2 files with 1000000 numbers each.\n");
     printf("Generating files.\n");
 
     vec_1 = fopen("../../build/vec_1.txt", "w+");
