@@ -10,12 +10,12 @@
 #include "num_utils.h"
 #include "num_manip.h"
 
-errors_t get_params(string_t argv[], size_t argc, string_t** file_names, size_t* files_cnt, size_t* proc_cnt) {
+errors_t mp_get_params(string_t argv[], size_t argc, string_t** file_names, size_t* files_cnt, size_t* proc_cnt) {
     if(files_cnt == NULL || proc_cnt == NULL || argv == NULL || file_names == NULL) {
         return ERR_NULL;
     }
 
-    int opt = 0;
+    int opt;
 
     while((opt = getopt((int)argc, argv, "-:j:")) != -1) {
         if(opt == 'j') {
@@ -89,11 +89,22 @@ errors_t get_params(string_t argv[], size_t argc, string_t** file_names, size_t*
     return 0;
 }
 
-errors_t handle_files(string_t file_names[], size_t files_count, size_t proc_count) {
+errors_t handle_files(string_t argv[], size_t argc) {
+
+    string_t* file_names = NULL;
+    size_t files_count = 0;
+    size_t proc_count = 0;
+    errors_t code = mp_get_params(argv, argc, &file_names, &files_count, &proc_count);
+
+
+    if(code != 0) {
+        return code;
+    }
+
     if(file_names == NULL || files_count == 0) {
         return ERR_NULL;
     }
-#ifndef BUILD_STATIC
+
     if(proc_count > sysconf(_SC_NPROCESSORS_ONLN)) {
         return ERR_MORE_PROC;
     }
@@ -101,51 +112,58 @@ errors_t handle_files(string_t file_names[], size_t files_count, size_t proc_cou
     if(proc_count == 0) {
         proc_count = sysconf(_SC_NPROCESSORS_ONLN);
     }
-#endif
-
-#ifdef BUILD_STATIC
-    proc_count = 1;
-#endif
-
 
     array_t* arrays = malloc(sizeof(array_t) * files_count);
-    errors_t code = 0;
+
 
     for(size_t i = 0; i < files_count; ++i) {
-        code = 0;
 
         code = get_array(&arrays[i], file_names[i]);
 
         if (code != 0) {
-
             for(size_t j = 0; j < files_count; ++j){
                 free(arrays[j].arr);
             }
             free(arrays);
 
+            for(size_t j = 0; j < files_count; ++j) {
+                free(file_names[j]);
+            }
+            free(file_names);
+
             return code;
         }
     }
 
-    code = m_sort(&arrays, files_count, proc_count);
+    code = mp_sort(&arrays, files_count, proc_count);
 
     if(code != 0) {
-        for(size_t i = 0; i < files_count; ++i) {
-            free(arrays[i].arr);
+        for(size_t j = 0; j < files_count; ++j){
+            free(arrays[j].arr);
         }
         free(arrays);
+
+        for(size_t j = 0; j < files_count; ++j) {
+            free(file_names[j]);
+        }
+        free(file_names);
 
         return code;
     }
 
     for(size_t i = 0; i < files_count; ++i) {
-        code = print_info(&arrays[i], proc_count);
+        code = mp_print_info(&arrays[i], proc_count);
 
         if(code != 0) {
-            for(size_t j = 0; j < files_count; ++j) {
+            for(size_t j = 0; j < files_count; ++j){
                 free(arrays[j].arr);
             }
             free(arrays);
+
+            for(size_t j = 0; j < files_count; ++j) {
+                free(file_names[j]);
+            }
+            free(file_names);
             return code;
         }
     }
@@ -155,82 +173,15 @@ errors_t handle_files(string_t file_names[], size_t files_count, size_t proc_cou
     }
     free(arrays);
 
-    return 0;
-}
-
-errors_t open_file(string_t file_name, file_t* file) {
-    if(file == NULL) {
-        return ERR_NULL;
+    for(size_t i = 0; i < files_count; ++i) {
+        free(file_names[i]);
     }
-
-    *file = fopen(file_name, "r");
-
-    if(*file == NULL) {
-        return ERR_FOPEN;
-    }
+    free(file_names);
 
     return 0;
 }
 
-errors_t get_array(array_t* result, string_t file_name) {
-    if(result == NULL || file_name == NULL) {
-        return ERR_NULL;
-    }
-
-    file_t file = NULL;
-    short err_code = open_file(file_name, &file);
-
-    if(err_code != 0) {
-        return err_code;
-    }
-
-    size_t buff_size = 1;
-    size_t real_size = 0;
-    int* arr = malloc(sizeof(int));
-
-    if(arr == NULL) {
-        fclose(file);
-        return ERR_MALLOC;
-    }
-
-    int value = 0;
-
-    while(!feof(file) && (fscanf(file, "%d", &value) == 1)) {
-
-        if(real_size == buff_size) {
-            int* tmp = realloc(arr, sizeof(int) * buff_size * 2);
-
-            if(tmp == NULL) {
-                free(arr);
-                fclose(file);
-                return ERR_MALLOC;
-            }
-
-            arr = tmp;
-            buff_size *= 2;
-        }
-
-        arr[real_size++] = value;
-    }
-
-    int* res_arr = realloc(arr, sizeof(int) * real_size);
-
-    if(res_arr == NULL) {
-        free(arr);
-        fclose(file);
-        return ERR_MALLOC;
-    }
-
-    result->size = real_size - 1;
-    result->arr = res_arr;
-    result->vec_name = file_name;
-
-    fclose(file);
-
-    return 0;
-}
-
-errors_t print_info(array_t* array, size_t proc_count) {
+errors_t mp_print_info(array_t* array, size_t proc_count) {
     if(array == NULL) {
         return ERR_NULL;
     }
@@ -313,13 +264,13 @@ errors_t print_info(array_t* array, size_t proc_count) {
 
     long dig_cnt_sum = get_sum(digits_count, 10);
     double mid = (double)dig_cnt_sum / 10;
-    int max_width = get_dig_cnt(get_max(digits_count, 10));
+    int max_width = (int)get_dig_cnt(get_max(digits_count, 10));
 
 
     for (size_t k = 0; k < 10; ++k) {
         printf("%ld: %*ld, %5.2lf%c | ", k, max_width, digits_count[k], (double)digits_count[k] / (double)dig_cnt_sum * 100, '%');
 
-        for (size_t j = 0; j < (double)digits_count[k] / mid * 50; ++j) {
+        for (size_t j = 0; j < (size_t)((double)digits_count[k] / mid * 50); ++j) {
             printf("*");
         }
 
@@ -330,34 +281,3 @@ errors_t print_info(array_t* array, size_t proc_count) {
 
     return 0;
 }
-
-void print_message(errors_t code) {
-    switch(code) {
-        case ERR_MALLOC:
-            printf("Malloc error in program, exiting...\n");
-            return;
-        case ERR_NULL:
-            printf("NULL pointer given to function, exiting...\n");
-            return;
-        case ERR_FOPEN:
-            printf("Unable to open file(s), exiting...\n");
-            return;
-        case ERR_MORE_PROC:
-            printf("You\'re requiring more processes, that your system can handle, exiting...\n");
-            return;
-        case ERR_UNKNWN_PARAM:
-            printf("Unknown parameter given, exiting...\n");
-            return;
-        case ERR_PROC_PARAM:
-            printf("Parameter after -j should be a positive number, exiting...\n");
-            return;
-        case ERR_NO_FILES:
-            printf("No files given, exiting...\n");
-            return;
-        case ERR_PROC:
-            printf("Error while creating child process, exiting...\n");
-        default:
-            break;
-    }
-}
-

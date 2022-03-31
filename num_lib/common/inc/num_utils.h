@@ -23,12 +23,15 @@ typedef enum errors_t {
     NERROR_PROC_EXIT = -9
 } errors_t;
 
-errors_t get_params(string_t argv[], size_t argc, string_t** file_names, size_t* files_cnt, size_t* proc_cnt);
-errors_t handle_files(string_t [], size_t, size_t);
 
 errors_t open_file(string_t, file_t*);
 errors_t get_array(array_t*, string_t);
 
-errors_t print_info(array_t*, size_t);
-
 void print_message(errors_t);
+
+errors_t mp_get_params(string_t[], size_t, string_t**, size_t*, size_t*);
+errors_t mp_print_info(array_t*, size_t);
+
+errors_t get_params(string_t [], size_t, string_t**, size_t*);
+errors_t handle_files(string_t [], size_t);
+errors_t print_info(array_t*);
