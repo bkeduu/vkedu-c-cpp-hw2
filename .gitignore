@@ -1,5 +1,6 @@
+.gitignore
 .idea
 build
 vectors/*.txt
 cmake-build-debug
-benchmark/
+benchmark/build/

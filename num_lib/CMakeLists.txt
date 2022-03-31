@@ -15,12 +15,13 @@ file(GLOB INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 message("SOURCES = ${SOURCES}")
 message("INCLUDE_DIRS = ${INCLUDE_DIRS}")
 
-
 if(BUILD_SHARED)
     add_library(${PROJECT_NAME} SHARED ${SOURCES})
 elseif(BUILD_STATIC)
-    set(CMAKE_C_FLAGS "-D BUILD_STATIC ${CMAKE_C_FLAGS} ")
+    set(CMAKE_C_FLAGS "-D BUILD_STATIC ${CMAKE_C_FLAGS}")
     add_library(${PROJECT_NAME} STATIC ${SOURCES})
+else()
+    add_library(${PROJECT_NAME} SHARED ${SOURCES})
 endif(BUILD_SHARED)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
