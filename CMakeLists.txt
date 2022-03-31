@@ -21,4 +21,4 @@ target_link_libraries(${PROJECT_NAME}_static PRIVATE ${NUM_LIB_LIBRARIES_COMMON}
 target_link_libraries(${PROJECT_NAME}_static PRIVATE ${NUM_LIB_LIBRARIES_STATIC})
 target_link_libraries(${PROJECT_NAME}_static PRIVATE m)
 
-#add_subdirectory(tests)
+add_subdirectory(tests)
