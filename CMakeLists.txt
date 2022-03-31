@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(numbers)
 
 add_subdirectory(num_lib)
-#set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-g -fprofile-arcs -ftest-coverage -fPIC -O0 -Wall -Werror -Wpedantic")
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-g -O0 -Wall -Werror -Wpedantic")
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-g -fprofile-arcs -ftest-coverage -fPIC -O0 -Wall -Werror -Wpedantic")
 
 add_executable(${PROJECT_NAME} numbers.c)
 
