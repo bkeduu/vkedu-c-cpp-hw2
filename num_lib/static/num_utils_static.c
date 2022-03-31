@@ -12,7 +12,7 @@ errors_t get_params(string_t argv[], size_t argc, string_t** file_names, size_t*
         return ERR_NULL;
     }
 
-    int opt = 0;
+    int opt;
 
     while((opt = getopt((int)argc, argv, "-:")) != -1) {
         if(opt == 1) {
@@ -76,9 +76,7 @@ errors_t handle_files(string_t argv[], size_t argc) {
 
     string_t* file_names = NULL;
     size_t files_count = 0;
-    errors_t code = 0;
-
-    code = get_params(argv, argc, &file_names, &files_count);
+    errors_t code = get_params(argv, argc, &file_names, &files_count);
 
     if(file_names == NULL || files_count == 0) {
         return ERR_NULL;
@@ -192,7 +190,7 @@ errors_t print_info(array_t* array) {
     for (size_t k = 0; k < 10; ++k) {
         printf("%ld: %*ld, %5.2lf%c | ", k, max_width, digits_count[k], (double)digits_count[k] / (double)dig_cnt_sum * 100, '%');
 
-        for (size_t j = 0; j < (double)digits_count[k] / mid * 50; ++j) {
+        for (size_t j = 0; j < (size_t)((double)digits_count[k] / mid * 50); ++j) {
             printf("*");
         }
 
