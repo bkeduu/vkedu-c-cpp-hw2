@@ -9,12 +9,17 @@
 short mp_sort(array_t** arrays, size_t count, size_t proc_count) {
 
     array_t* sh_arrays = mmap(NULL, sizeof(array_t) * count, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1 ,0);
+
+    if(sh_arrays == (void*)-1) {
+        return ERR_PROC;
+    }
+
     memcpy(sh_arrays, *arrays, sizeof(array_t) * count);
+    errors_t error_code;
 
     pid_t* pids = malloc(sizeof(pid_t) * proc_count);
 
     if(pids == NULL) {
-
         munmap(sh_arrays, sizeof(array_t) * count);
         return ERR_MALLOC;
     }
@@ -27,6 +32,7 @@ short mp_sort(array_t** arrays, size_t count, size_t proc_count) {
         pids[i] = fork();
 
         if (pids[i] < 0) {
+            munmap(sh_arrays, sizeof(array_t) * count);
             free(pids);
             return ERR_PROC;
         }
@@ -46,7 +52,11 @@ short mp_sort(array_t** arrays, size_t count, size_t proc_count) {
 
     free(pids);
     memcpy(*arrays, sh_arrays, sizeof(array_t) * count);
-    munmap(sh_arrays, sizeof(array_t) * count);
+    error_code = munmap(sh_arrays, sizeof(array_t) * count);
+
+    if(error_code) {
+        return ERR_PROC;
+    }
 
     return 0;
 }

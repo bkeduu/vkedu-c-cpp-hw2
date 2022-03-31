@@ -9,9 +9,6 @@ file(GLOB SOURCES_STATIC test_static.cpp)
 file(GLOB SOURCES_SHARED test_shared.cpp)
 
 find_package(GTest REQUIRED)
-find_library(${NUM_LIB_LIBRARIES_COMMON} REQUIRED)
-find_library(${NUM_LIB_LIBRARIES_SHARED} REQUIRED)
-find_library(${NUM_LIB_LIBRARIES_STATIC} REQUIRED)
 
 add_executable(${PROJECT_NAME}_static ${SOURCES_STATIC})
 add_executable(${PROJECT_NAME}_shared ${SOURCES_SHARED})

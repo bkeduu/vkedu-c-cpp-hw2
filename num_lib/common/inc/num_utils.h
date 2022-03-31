@@ -1,5 +1,7 @@
 #pragma once
 
+#define DIGITS_COUNT 10
+
 #include <stdio.h>
 
 typedef FILE* file_t;
@@ -25,13 +27,16 @@ typedef enum errors_t {
 
 
 errors_t open_file(string_t, file_t*);
-errors_t get_array(array_t*, string_t);
+errors_t add_file(string_t**, size_t*, string_t);
+errors_t get_vector(array_t*, string_t);
 
 void print_message(errors_t);
 
-errors_t mp_get_params(string_t[], size_t, string_t**, size_t*, size_t*);
-errors_t mp_print_info(array_t*, size_t);
+errors_t get_params(string_t[], size_t, string_t**, size_t*, size_t*);
+errors_t get_digits_count(array_t*, size_t, size_t**);
 
-errors_t get_params(string_t [], size_t, string_t**, size_t*);
-errors_t handle_files(string_t [], size_t);
-errors_t print_info(array_t*);
+errors_t handle_files(string_t*, size_t, size_t);
+errors_t print_info(array_t, size_t);
+
+void free_arrays(array_t**, size_t);
+void free_fnames(string_t**, size_t);
