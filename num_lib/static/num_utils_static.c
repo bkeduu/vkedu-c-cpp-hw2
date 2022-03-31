@@ -108,17 +108,7 @@ errors_t handle_files(string_t argv[], size_t argc) {
     }
 
     for(size_t i = 0; i < files_count; ++i) {
-
-        code = sort(arrays[i]);
-
-        if (code != 0) {
-            for (size_t j = 0; j < files_count; ++j) {
-                free(arrays[j].arr);
-            }
-            free(arrays);
-
-            return code;
-        }
+        sort(arrays[i]);
     }
 
     if(code != 0) {
