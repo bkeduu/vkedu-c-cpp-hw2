@@ -11,7 +11,7 @@ jobs:
       - name: Run checkers
         run: |
           cpplint --extensions=c,h *.c num_lib/shared/* num_lib/static/* num_lib/common/inc/* > cpplint_result.txt 2>&1
-          clang-tidy num_lib/static/* numbers.c -extra-arg=-std=gnu11 -- -I num_lib/common/inc > clang_result.txt 2>&1
+          clang-tidy num_lib/static/* numbers.c -extra-arg=-std=gnu11 -- -I num_lib/common/inc > clang_result.txt 2>&1 || exit 0
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
