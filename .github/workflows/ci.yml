@@ -10,7 +10,7 @@ jobs:
           sudo apt update && sudo apt install clang clang-tidy python3 python3-pip && sudo pip install cpplint numpy
       - name: Run checkers
         run: |
-          cpplint --extensions=c *.c num_lib/*/* num_lib/*/*/* > cpplint_result.txt
+          cpplint --extensions=c *.c num_lib/*/* num_lib/*/*/* > cpplint_result.txt 2>&1
           clang-tidy num_lib/static/* numbers.c -extra-arg=-std=gnu11 -- -I num_lib/common/inc > clang_result.txt 2>&1
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
