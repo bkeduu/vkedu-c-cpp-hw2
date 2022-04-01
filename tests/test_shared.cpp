@@ -1,10 +1,20 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <iostream>
+#include <cstdlib>
+#include <cstdio>
 
 extern "C" {
 #include "num_utils.h"
 #include "num_manip.h"
+}
+
+TEST(generate_test_file, test) {
+    FILE* out = fopen("vector.txt", "w+");;
+    for(size_t i = 0; i < 1000; ++i) {
+        fprintf(out, "%d\n", rand());
+    }
+    fclose(out);
 }
 
 TEST(test_NULL, get_params_tests) {
@@ -56,7 +66,7 @@ TEST(test_handle_more_proc, handle_files_tests) {
 }
 
 TEST(test_handle_files_normal, handle_files_tests) {
-    string_t file_names[] = {(string_t)"../vec_0.txt"};
+    string_t file_names[] = {(string_t)"vector.txt"};
     handle_files(file_names, 1, 1);
 }
 
@@ -88,7 +98,7 @@ TEST(test_get_vector_NULL, get_vector_tests) {
 
 TEST(test_get_vector_normal, get_vector_tests) {
     array_t res;
-    string_t file_names[] = {(string_t)"../vectors/vec_0.txt"};
+    string_t file_names[] = {(string_t)"vector.txt"};
     EXPECT_EQ(0, get_vector(&res, file_names[0]));
     free(res.arr);
 }
@@ -107,7 +117,7 @@ TEST(test_open_file_NULL, open_file_tests) {
 
 TEST(test_sort, sort_tests) {
     array_t* res = (array_t*)malloc(sizeof(array_t));
-    string_t file_names[] = {(string_t)"../vec_0.txt"};
+    string_t file_names[] = {(string_t)"vector.txt"};
     EXPECT_EQ(0, get_vector(res, file_names[0]));
     mp_sort(&res, 1, 1);
     free(res->arr);

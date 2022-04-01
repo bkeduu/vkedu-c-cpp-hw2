@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <random>
 
 extern "C" {
 #include "num_utils.h"
@@ -73,7 +75,7 @@ TEST(test_get_vector_NULL, get_vector_tests) {
 
 TEST(test_get_vector_normal, get_vector_tests) {
     array_t res;
-    string_t file_names[] = {(string_t)"../vec_0.txt"};
+    string_t file_names[] = {(string_t)"vector.txt"};
     EXPECT_EQ(0, get_vector(&res, file_names[0]));
     free(res.arr);
 }
@@ -92,7 +94,7 @@ TEST(test_open_file_NULL, open_file_tests) {
 
 TEST(test_sort, sort_tests) {
     array_t res;
-    string_t file_names[] = {(string_t)"../vec_0.txt"};
+    string_t file_names[] = {(string_t)"vector.txt"};
     EXPECT_EQ(0, get_vector(&res, file_names[0]));
     sort(res);
     free(res.arr);

@@ -44,11 +44,6 @@ jobs:
       - name: Run tests
         run: |
           cd build
-          echo "10000" >> test_params.txt
-          echo "10000" >> test_params.txt
-          echo "1" >> test_params.txt
-          echo "" >> test_params.txt
-          python3 ../vectors/generate.py test_params.txt
           valgrind --leak-check=full -s --log-file=valgrind_tests_shared_report.txt ./tests/num_test_shared
           valgrind --leak-check=full -s --log-file=valgrind_tests_static_report.txt ./tests/num_test_static
           lcov -o coverage.info -c -d num_lib/ && genhtml -o coverage_report coverage.info
