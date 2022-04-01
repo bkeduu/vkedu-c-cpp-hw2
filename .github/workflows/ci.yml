@@ -40,7 +40,7 @@ jobs:
             build/numbers_static
       - name: Install valgrind and report software
         run: |
-          sudo apt update && sudo apt install valgrind lcov && sudo pip install numpy
+          sudo apt update && sudo apt install valgrind lcov
       - name: Run tests
         run: |
           cd build
