@@ -53,7 +53,7 @@ TEST(test_handle_files_NULL, handle_files_tests) {
 }
 
 TEST(test_handle_files_normal, handle_files_tests) {
-    string_t file_names[] = {(string_t)"../vec_0.txt"};
+    string_t file_names[] = {(string_t)"vector.txt"};
     EXPECT_EQ(0, handle_files(file_names, 1, 1));
 }
 
