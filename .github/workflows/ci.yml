@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v2 
       - name: Install checking tools
         run: |
-          sudo apt update && sudo apt install clang clang-tidy python3 python3-pip && sudo pip install cpplint numpy
+          sudo apt update && sudo apt install clang clang-tidy python3 python3-pip && sudo pip install cpplint
       - name: Run checkers
         run: |
           cpplint --extensions=c,h *.c num_lib/shared/* num_lib/static/* num_lib/common/inc/* > cpplint_result.txt 2>&1
@@ -40,7 +40,7 @@ jobs:
             build/numbers_static
       - name: Install valgrind and report software
         run: |
-          sudo apt update && sudo apt install valgrind lcov
+          sudo apt update && sudo apt install valgrind lcov && sudo pip install numpy
       - name: Run tests
         run: |
           cd build
