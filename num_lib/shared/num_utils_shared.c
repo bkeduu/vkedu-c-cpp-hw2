@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -13,20 +12,20 @@
 errors_t handle_files(string_t* file_names, size_t files_count, size_t proc_count) {
     errors_t code;
 
-    if(file_names == NULL || files_count == 0) {
+    if (file_names == NULL || files_count == 0) {
         return ERR_NULL;
     }
 
-    if(proc_count > sysconf(_SC_NPROCESSORS_ONLN)) {
+    if (proc_count > sysconf(_SC_NPROCESSORS_ONLN)) {
         return ERR_MORE_PROC;
     }
 
-    if(proc_count == 0) {
+    if (proc_count == 0) {
         proc_count = sysconf(_SC_NPROCESSORS_ONLN);
     }
 
     array_t* arrays = malloc(sizeof(array_t) * files_count);
-    for(size_t i = 0; i < files_count; ++i) {
+    for (size_t i = 0; i < files_count; ++i) {
         arrays[i].arr = NULL;
         arrays[i].size = 0;
         arrays[i].vec_name = NULL;
@@ -43,15 +42,15 @@ errors_t handle_files(string_t* file_names, size_t files_count, size_t proc_coun
 
     code = mp_sort(&arrays, files_count, proc_count);
 
-    if(code != 0) {
+    if (code != 0) {
         free_arrays(&arrays, files_count);
         return code;
     }
 
-    for(size_t i = 0; i < files_count; ++i) {
+    for (size_t i = 0; i < files_count; ++i) {
         code = print_info(arrays[i], proc_count);
 
-        if(code != 0) {
+        if (code != 0) {
             free_arrays(&arrays, files_count);
             return code;
         }
@@ -63,14 +62,14 @@ errors_t handle_files(string_t* file_names, size_t files_count, size_t proc_coun
 }
 
 errors_t get_digits_count(array_t* array, size_t proc_count, size_t** digits_count) {
-    if(array == NULL) {
+    if (array == NULL) {
         return ERR_NULL;
     }
 
     short error_code;
     *digits_count = malloc(sizeof(size_t) * DIGITS_COUNT);
 
-    if(*digits_count == NULL) {
+    if (*digits_count == NULL) {
         return ERR_MALLOC;
     }
 
@@ -78,9 +77,10 @@ errors_t get_digits_count(array_t* array, size_t proc_count, size_t** digits_cou
         (*digits_count)[k] = 0;
     }
 
-    size_t* sh_digits_count = mmap(NULL, sizeof(size_t) * DIGITS_COUNT, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    size_t* sh_digits_count = mmap(NULL, sizeof(size_t) * DIGITS_COUNT, PROT_WRITE | PROT_READ,
+                                   MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-    if(sh_digits_count == (void*)-1) {
+    if (sh_digits_count == (void*)-1) {
         free(*digits_count);
         return ERR_PROC;
     }
@@ -89,21 +89,22 @@ errors_t get_digits_count(array_t* array, size_t proc_count, size_t** digits_cou
 
     sem_t* semaphore = malloc(sizeof(sem_t));
 
-    if(semaphore == NULL) {
+    if (semaphore == NULL) {
         return ERR_MALLOC;
     }
 
     error_code = (errors_t)sem_init(semaphore, 1, 1);
 
-    if(error_code == -1) {
+    if (error_code == -1) {
         munmap(sh_digits_count, sizeof(size_t) * DIGITS_COUNT);
         free(*digits_count);
         return ERR_PROC;
     }
 
-    sem_t* sh_semaphore = mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    sem_t* sh_semaphore = mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE,
+                               MAP_ANONYMOUS | MAP_SHARED, -1, 0);
 
-    if(sh_semaphore == (void*)-1) {
+    if (sh_semaphore == (void*)-1) {
         munmap(sh_digits_count, sizeof(size_t) * DIGITS_COUNT);
         free(semaphore);
         free(*digits_count);
@@ -114,21 +115,18 @@ errors_t get_digits_count(array_t* array, size_t proc_count, size_t** digits_cou
 
     pid_t *pids = malloc(sizeof(pid_t) * proc_count);
 
-    if(pids == NULL) {
+    if (pids == NULL) {
         return ERR_MALLOC;
     }
 
     for (size_t i = 0; i < proc_count; ++i) {
-
         pids[i] = fork();
 
         if (pids[i] < 0) {
             free(pids);
             return ERR_PROC;
         } else if (pids[i] == 0) {
-
-            for(size_t k = i; k < array->size; k += proc_count) {
-
+            for (size_t k = i; k < array->size; k += proc_count) {
                 sem_wait(sh_semaphore);
 
                 int curr_value = array->arr[k];
@@ -155,7 +153,7 @@ errors_t get_digits_count(array_t* array, size_t proc_count, size_t** digits_cou
 
     error_code = (errors_t)sem_destroy(semaphore);
 
-    if(error_code == -1) {
+    if (error_code == -1) {
         munmap(sh_digits_count, sizeof(size_t) * DIGITS_COUNT);
         munmap(sh_semaphore, sizeof(sem_t));
         free(semaphore);
@@ -170,7 +168,7 @@ errors_t get_digits_count(array_t* array, size_t proc_count, size_t** digits_cou
     memcpy(*digits_count, sh_digits_count, sizeof(size_t) * DIGITS_COUNT);
     error_code = (errors_t)munmap(sh_digits_count, sizeof(size_t) * DIGITS_COUNT);
 
-    if(error_code) {
+    if (error_code) {
         munmap(sh_semaphore, sizeof(sem_t));
         free(*digits_count);
         return ERR_PROC;
@@ -178,7 +176,7 @@ errors_t get_digits_count(array_t* array, size_t proc_count, size_t** digits_cou
 
     error_code = (errors_t)munmap(sh_semaphore, sizeof(sem_t));
 
-    if(error_code) {
+    if (error_code) {
         free(*digits_count);
         return ERR_PROC;
     }

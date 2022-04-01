@@ -18,7 +18,7 @@ typedef enum errors_t {
     ERR_NULL = -2,
     ERR_FOPEN = -3,
     ERR_MORE_PROC = -4,
-    ERR_UNKNWN_PARAM= -5,
+    ERR_UNKNWN_PARAM = -5,
     ERR_PROC_PARAM = -6,
     ERR_PROC = -7,
     ERR_NO_FILES = -8,
