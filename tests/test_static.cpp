@@ -50,13 +50,8 @@ TEST(test_handle_files_NULL, handle_files_tests) {
     EXPECT_EQ(ERR_NULL, handle_files(NULL, 0, 0));
 }
 
-/*TEST(test_handle_files_more_proc, handle_files_tests) {
-    string_t file_names[] = {(string_t)"file1.txt", (string_t)"file2.txt"};
-    EXPECT_EQ(ERR_MORE_PROC, handle_files(file_names, 2, 100000));
-}*/
-
 TEST(test_handle_files_normal, handle_files_tests) {
-    string_t file_names[] = {(string_t)"../vectors/vec_0.txt"};
+    string_t file_names[] = {(string_t)"../vec_0.txt"};
     EXPECT_EQ(0, handle_files(file_names, 1, 1));
 }
 
@@ -78,7 +73,7 @@ TEST(test_get_vector_NULL, get_vector_tests) {
 
 TEST(test_get_vector_normal, get_vector_tests) {
     array_t res;
-    string_t file_names[] = {(string_t)"../vectors/vec_0.txt"};
+    string_t file_names[] = {(string_t)"../vec_0.txt"};
     EXPECT_EQ(0, get_vector(&res, file_names[0]));
     free(res.arr);
 }
@@ -97,7 +92,7 @@ TEST(test_open_file_NULL, open_file_tests) {
 
 TEST(test_sort, sort_tests) {
     array_t res;
-    string_t file_names[] = {(string_t)"../vectors/vec_0.txt"};
+    string_t file_names[] = {(string_t)"../vec_0.txt"};
     EXPECT_EQ(0, get_vector(&res, file_names[0]));
     sort(res);
     free(res.arr);

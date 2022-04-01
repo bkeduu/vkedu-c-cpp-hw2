@@ -56,7 +56,7 @@ TEST(test_handle_more_proc, handle_files_tests) {
 }
 
 TEST(test_handle_files_normal, handle_files_tests) {
-    string_t file_names[] = {(string_t)"../vectors/vec_0.txt"};
+    string_t file_names[] = {(string_t)"../vec_0.txt"};
     handle_files(file_names, 1, 1);
 }
 
@@ -107,7 +107,7 @@ TEST(test_open_file_NULL, open_file_tests) {
 
 TEST(test_sort, sort_tests) {
     array_t* res = (array_t*)malloc(sizeof(array_t));
-    string_t file_names[] = {(string_t)"../vectors/vec_0.txt"};
+    string_t file_names[] = {(string_t)"../vec_0.txt"};
     EXPECT_EQ(0, get_vector(res, file_names[0]));
     mp_sort(&res, 1, 1);
     free(res->arr);
