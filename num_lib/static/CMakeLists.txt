@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(num_lib_static)
 
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-g -O0 -fprofile-arcs -ftest-coverage -fPIC -Wall -Werror -Wpedantic")
+set(CMAKE_C_COMPILER /usr/bin/gcc)
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=gnu11 -g -O0 -fprofile-arcs -ftest-coverage -fPIC -Wall -Werror -Wpedantic")
 
 file(GLOB SOURCES *.c)
 file(GLOB INCLUDE_DIRS ${NUM_LIB_COMMON_INCLUDE_DIRS})

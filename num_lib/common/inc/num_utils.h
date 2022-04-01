@@ -32,11 +32,11 @@ errors_t get_vector(array_t*, string_t);
 
 void print_message(errors_t);
 
-errors_t get_params(string_t[], size_t, string_t**, size_t*, size_t*);
-errors_t get_digits_count(array_t*, size_t, size_t**);
+errors_t get_params(string_t[], size_t, string_t**, size_t*, size_t*);  //
+errors_t get_digits_count(array_t*, size_t, size_t**);  //
 
-errors_t handle_files(string_t*, size_t, size_t);
-errors_t print_info(array_t, size_t);
+errors_t handle_files(string_t*, size_t, size_t);  //
+errors_t print_info(array_t, size_t);  //
 
-void free_arrays(array_t**, size_t);
-void free_fnames(string_t**, size_t);
+void free_arrays(array_t**, size_t);  //
+void free_fnames(string_t**, size_t);  //

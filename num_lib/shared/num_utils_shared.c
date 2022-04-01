@@ -85,7 +85,8 @@ errors_t get_digits_count(array_t* array, size_t proc_count, size_t** digits_cou
         return ERR_PROC;
     }
 
-    memcpy(sh_digits_count, *digits_count, sizeof(size_t) * DIGITS_COUNT);
+    memcpy(sh_digits_count, *digits_count, sizeof(size_t) * DIGITS_COUNT);  // NOLINT
+                                            // because secure memcpy windows-only
 
     sem_t* semaphore = malloc(sizeof(sem_t));
 
@@ -111,7 +112,7 @@ errors_t get_digits_count(array_t* array, size_t proc_count, size_t** digits_cou
         return ERR_PROC;
     }
 
-    memcpy(sh_semaphore, semaphore, sizeof(sem_t));
+    memcpy(sh_semaphore, semaphore, sizeof(sem_t));  // NOLINT because secure memcpy windows-only
 
     pid_t *pids = malloc(sizeof(pid_t) * proc_count);
 
@@ -165,7 +166,8 @@ errors_t get_digits_count(array_t* array, size_t proc_count, size_t** digits_cou
     free(semaphore);
     free(pids);
 
-    memcpy(*digits_count, sh_digits_count, sizeof(size_t) * DIGITS_COUNT);
+    memcpy(*digits_count, sh_digits_count, sizeof(size_t) * DIGITS_COUNT);  // NOLINT
+                                                            // because secure memcpy windows-only
     error_code = (errors_t)munmap(sh_digits_count, sizeof(size_t) * DIGITS_COUNT);
 
     if (error_code) {

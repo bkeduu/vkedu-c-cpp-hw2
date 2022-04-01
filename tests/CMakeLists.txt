@@ -15,15 +15,12 @@ add_executable(${PROJECT_NAME}_shared ${SOURCES_SHARED})
 
 
 target_include_directories(${PROJECT_NAME}_shared PUBLIC ${NUM_LIB_COMMON_INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME}_shared PUBLIC ${NUM_LIB_SHARED_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}_shared PRIVATE ${NUM_LIB_LIBRARIES_COMMON} GTest::GTest gtest_main)
 target_link_libraries(${PROJECT_NAME}_shared PRIVATE ${NUM_LIB_LIBRARIES_COMMON})
 target_link_libraries(${PROJECT_NAME}_shared PRIVATE ${NUM_LIB_LIBRARIES_SHARED})
-target_link_libraries(${PROJECT_NAME}_shared PRIVATE m)
-target_link_libraries(${PROJECT_NAME}_shared PRIVATE ${NUM_LIB_LIBRARIES_COMMON} GTest::GTest gtest_main)
 
 target_include_directories(${PROJECT_NAME}_static PUBLIC ${NUM_LIB_COMMON_INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME}_static PUBLIC ${NUM_LIB_STATIC_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}_static PRIVATE ${NUM_LIB_LIBRARIES_COMMON} GTest::GTest gtest_main)
 target_link_libraries(${PROJECT_NAME}_static PRIVATE ${NUM_LIB_LIBRARIES_COMMON})
 target_link_libraries(${PROJECT_NAME}_static PRIVATE ${NUM_LIB_LIBRARIES_STATIC})
-target_link_libraries(${PROJECT_NAME}_static PRIVATE m)
-target_link_libraries(${PROJECT_NAME}_static PRIVATE ${NUM_LIB_LIBRARIES_COMMON} GTest::GTest gtest_main)
+

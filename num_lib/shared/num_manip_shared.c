@@ -14,7 +14,7 @@ short mp_sort(array_t** arrays, size_t count, size_t proc_count) {
         return ERR_PROC;
     }
 
-    memcpy(sh_arrays, *arrays, sizeof(array_t) * count);
+    memcpy(sh_arrays, *arrays, sizeof(array_t) * count);  // NOLINT because secure memcpy windows-only
     errors_t error_code;
 
     pid_t* pids = malloc(sizeof(pid_t) * proc_count);
@@ -51,7 +51,7 @@ short mp_sort(array_t** arrays, size_t count, size_t proc_count) {
     }
 
     free(pids);
-    memcpy(*arrays, sh_arrays, sizeof(array_t) * count);
+    memcpy(*arrays, sh_arrays, sizeof(array_t) * count);  // NOLINT because secure memcpy windows-only
     error_code = munmap(sh_arrays, sizeof(array_t) * count);
 
     if (error_code) {

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "num_utils.h"
@@ -20,7 +21,7 @@ int main(int argc, char* argv[]) {
     if (error_code != 0) {
         print_message(error_code);
         free_fnames(&file_names, files_count);
-        return 0;
+        exit(0);
     }
 
     clock_t end_time = clock();

@@ -185,6 +185,7 @@ errors_t add_file(string_t** file_names, size_t* files_count, string_t file_name
 
     if ((*file_names)[*files_count - 1] == NULL) {
         free_fnames(file_names, *files_count);
+        return ERR_MALLOC;
     }
 
     strncpy((*file_names)[*files_count - 1], optarg, strlen(file_name) + 1);
@@ -192,6 +193,10 @@ errors_t add_file(string_t** file_names, size_t* files_count, string_t file_name
 }
 
 errors_t print_info(array_t array, size_t proc_count) {
+    if (array.arr == NULL || array.size == 0) {
+        return ERR_NULL;
+    }
+
     size_t* digits_count = NULL;
 
     errors_t error_code = get_digits_count(&array, proc_count, &digits_count);
