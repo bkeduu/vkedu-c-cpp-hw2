@@ -6,7 +6,7 @@
 #include "num_utils.h"
 #include "num_manip.h"
 
-errors_t get_params(string_t argv[], size_t argc, string_t** file_names,
+errors_t get_params(string_t argv[], size_t argc, string_t** file_names,  // function for handling command-line args
                     size_t* files_count, size_t* proc_cnt) {
     if (files_count == NULL || argv == NULL || file_names == NULL) {
         return ERR_NULL;
@@ -15,7 +15,9 @@ errors_t get_params(string_t argv[], size_t argc, string_t** file_names,
     int opt;
 
     while ((opt = getopt((int)argc, argv, "-:j:")) != -1) {
-        if (opt == 'j' && proc_cnt != NULL) {
+        if (opt == 'j' && proc_cnt != NULL) {  // -j with processes count after this param
+                                            // in static-lib version, last argument of this function is NULL
+                                            //because of this, this parameter will be ignored
             size_t proc_arg = strtoul(optarg, NULL, 10);
             if (proc_arg > 0) {
                 *proc_cnt = proc_arg;
@@ -23,7 +25,7 @@ errors_t get_params(string_t argv[], size_t argc, string_t** file_names,
                 free_fnames(file_names, *files_count);
                 return ERR_PROC_PARAM;
             }
-        } else if (opt == 1) {
+        } else if (opt == 1) {  // just file names
             errors_t error_code = add_file(file_names, files_count, optarg);
 
             if (error_code != 0) {
@@ -36,7 +38,7 @@ errors_t get_params(string_t argv[], size_t argc, string_t** file_names,
         }
     }
 
-    if (*files_count == 0) {
+    if (*files_count == 0) {  // if no files presented, exit from program
         free_fnames(file_names, *files_count);
         return ERR_NO_FILES;
     }
@@ -44,7 +46,7 @@ errors_t get_params(string_t argv[], size_t argc, string_t** file_names,
     return 0;
 }
 
-errors_t open_file(string_t file_name, file_t* file) {
+errors_t open_file(string_t file_name, file_t* file) {  // function that opens file
     if (file == NULL) {
         return ERR_NULL;
     }
@@ -58,7 +60,7 @@ errors_t open_file(string_t file_name, file_t* file) {
     return 0;
 }
 
-errors_t get_vector(array_t* result, string_t file_name) {
+errors_t get_vector(array_t* result, string_t file_name) {  // function, that reads vector from file
     if (result == NULL || file_name == NULL) {
         return ERR_NULL;
     }
@@ -70,8 +72,8 @@ errors_t get_vector(array_t* result, string_t file_name) {
         return err_code;
     }
 
-    size_t buff_size = 1;
-    size_t real_size = 0;
+    size_t buff_size = 1;  // size of buffer
+    size_t real_size = 0;  // real size, count of scanned elements
     int* arr = malloc(sizeof(int));
 
     if (arr == NULL) {
@@ -115,7 +117,7 @@ errors_t get_vector(array_t* result, string_t file_name) {
     return 0;
 }
 
-void print_message(errors_t code) {
+void print_message(errors_t code) {  // function that prints error messages from provided error code
     switch (code) {
         case ERR_MALLOC:
             printf("Malloc error in program, exiting...\n");
@@ -146,21 +148,23 @@ void print_message(errors_t code) {
     }
 }
 
-void free_arrays(array_t** arrays, size_t size) {
+void free_arrays(array_t** arrays, size_t size) {  // function that cleaning vector arrays scanned by program,
+                                                  // used in handle_files()
     for (size_t i = 0; i < size; ++i) {
         free((*arrays)[i].arr);
     }
     free(*arrays);
 }
 
-void free_fnames(string_t** arrays, size_t size) {
+void free_fnames(string_t** arrays, size_t size) {  // function that cleaning array with file names
     for (size_t i = 0; i < size; ++i) {
         free((*arrays)[i]);
     }
     free(*arrays);
 }
 
-errors_t add_file(string_t** file_names, size_t* files_count, string_t file_name) {
+errors_t add_file(string_t** file_names, size_t* files_count, string_t file_name) {  // function that adds file_name
+                                            // into array with file names, used in get_params()
     if (*file_names == NULL) {
         *file_names = malloc(sizeof(string_t));
 
@@ -192,22 +196,24 @@ errors_t add_file(string_t** file_names, size_t* files_count, string_t file_name
     return 0;
 }
 
-errors_t print_info(array_t array, size_t proc_count) {
+errors_t print_info(array_t array, size_t proc_count) {  // function that prints info about vector,
+                                                        // such as median and digits distribution
     if (array.arr == NULL || array.size == 0) {
         return ERR_NULL;
     }
 
-    size_t* digits_count = NULL;
+    size_t* digits_count = NULL;  // ptr to array with digits distribution info
 
-    errors_t error_code = get_digits_count(&array, proc_count, &digits_count);
+    errors_t error_code = get_digits_count(&array, proc_count, &digits_count);  // filling this array
 
     if (error_code != 0) {
         return error_code;
     }
 
     long dig_cnt_sum = get_sum(digits_count, DIGITS_COUNT);
-    double mid = (double)dig_cnt_sum / DIGITS_COUNT;
-    int max_width = (int)get_dig_cnt(get_max(digits_count, DIGITS_COUNT));
+    double mid = (double)dig_cnt_sum / DIGITS_COUNT;  // middle value, used for histogram good formatting
+    int max_width = (int)get_dig_cnt(get_max(digits_count, DIGITS_COUNT));  // width of max element,
+                                                                    // used for histogram good formatting
 
     printf("\nVector: %s, median: %d\n", array.vec_name, array.arr[array.size / 2]);
     printf("Digits distribution histogram for \"%s\" vector:\n\n", array.vec_name);
